@@ -1,1 +1,3 @@
-# 针对第一篇课题的Mask R-CNN改进
+## The implement of vovnet in centermask2 
+Now the program has a lot of shortcomings, improvements are under way.
+
