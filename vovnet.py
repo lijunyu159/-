@@ -1,3 +1,8 @@
+import numpy as np
+import tensorflow as tf
+import keras
+import keras.backend as K
+import keras.layers as KL
 ############################################################
 #  VoVnet Graph
 ############################################################
@@ -105,15 +110,15 @@ def conv1x1(input_tensor, filters, module_name, postfix, stride=1, kernel_size=1
     x = KL.Activation('relu')(x)
     return x
 
-# http://osask.cn/front/ask/view/590259
 def Hsigmoid(x):
-    return
-
+    x = KL.Activation('relu')(x)
+    x = KL.Activation('sigmoid')(x)
+    return x
 
 def eSEModule(input_tensor,out_ch):
     x = KL.GlobalAveragePooling2D()(input_tensor)
-    x = KL.Dense(out_ch, activation='relu', use_bias=False)(x)
-    # x = Hsigmoid(x)
+    x = KL.Dense(out_ch,  use_bias=False)(x)
+    x = Hsigmoid(x)
     return KL.Multiply()([input_tensor, x])
 
 
@@ -178,7 +183,7 @@ def _OSA_stage(input_tensor, stage_num, concat_ch, block_per_stage, layer_per_bl
         return x
 
     # for i in range(block_per_stage - 1):
-    #     if i != block_per_stage - 2: 
+    #     if i != block_per_stage - 2:  # 当每个阶段只有一个OSA块或者4or3块中的last block时，SE打开。
     #         SE = False
     #     module_name = 'OSA{}_{}'.format(stage_num,i + 2)
     #     _OSA_module(x,stage_ch,concat_ch, layer_per_block, module_name, SE, identity=True)
@@ -201,12 +206,15 @@ def vovnet_graph(input_image, architecture, train_bn=False, SE=True):
     stem = KL.Conv2D(stem_ch[2],(3,3),padding='same',use_bias=False)(stem_1)
     stem = BatchNorm()(stem,training = False)
     stem = KL.Activation('relu')(stem)
-    stem_2= conv3x3(stem, stem_ch[2], "stem", "3", 2)
+    stem_2= conv3x3(stem, stem_ch[2], "stem", "3", 1)
     stem = KL.Add()([stem,stem_2])
-    C1 = stem
-    # C1 = KL.Concatenate(axis=1)([stem_2, stem_3])
-    # C1 = KL.Concatenate(axis=0)([stem, stem_2])
-    # 输出是256*256*256 "stem_3/relu"
+    # output stride = 4
+    # 模仿resnet(stage1)的方式
+    x = KL.ZeroPadding2D(padding=(3,3))(stem)
+    x = KL.Conv2D(64,(7,7),strides=(2,2))(x)
+    x = BatchNorm()(x,training=False)
+    x = KL.Activation('relu')(x)
+    C1 = KL.MaxPooling2D(pool_size=(3,3),strides=(2,2),padding='same')(x)
     # stage 2~5
     C2 = _OSA_stage(C1, 2, config_concat_ch[0], block_per_stage[0], layer_per_block, SE=True)
     C3 = _OSA_stage(C2, 3, config_concat_ch[1], block_per_stage[1], layer_per_block, SE=True)
