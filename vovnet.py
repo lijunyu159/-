@@ -110,9 +110,14 @@ def conv1x1(input_tensor, filters, module_name, postfix, stride=1, kernel_size=1
     x = KL.Activation('relu')(x)
     return x
 
+def relu6(x):
+    return K.relu(x,max_value=6.0)
+def hard_swish(x):
+    return relu6(x+3.0)/6.0
 def Hsigmoid(x):
-    x = KL.Activation('relu')(x)
-    x = KL.Activation('sigmoid')(x)
+    # x = KL.Activation('relu')(x)
+    # x = KL.Activation('sigmoid')(x)
+    x = KL.Activation(hard_swish)(x)
     return x
 
 def eSEModule(input_tensor,out_ch):
