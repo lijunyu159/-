@@ -1,9 +1,5 @@
-## The tensorflow+keras implement of vovnet in centermask2 
-Now the program has a lot of shortcomings, improvements are under way.
-
-requirements:
-  tensorflow 1.10
-  keras 2.1.6
-  python 3.5
+## 科研心路历程
+**不以物喜，不以己悲**
+做实验过程中有一些代码需要自己写，在这里记录一下。
   
 ### if this will help u, plz give me a star.
