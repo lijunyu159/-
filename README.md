@@ -9,3 +9,5 @@
 被拒稿了。。
 
     how many roads must a man walk down, before you call him a man?
+### 6/18
+`vovnet`有问题，捕捉不到实例
